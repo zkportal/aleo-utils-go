@@ -1,0 +1,25 @@
+[package]
+name = "aleo-utils"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+snarkvm-console = { version = "0.16.9", features = [ "wasm" ] }
+rand = "0.8.5"
+getrandom = { version = "0.2.11", features = [ "js" ] }
+hex = "0.4.3"
+indexmap = "2.0.0"
+
+[profile.release]
+# Tell `rustc` to optimize for small code size.
+opt-level = "s"
+# Enable Link Time Optimizations
+lto = true
+
+[profile.dev]
+opt-level = "s"
+lto = true
+incremental = false
