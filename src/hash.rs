@@ -3,13 +3,13 @@ use alloc::string::ToString;
 
 use snarkvm_console::{
   program::{Value, Network, CastLossy, U128},
-  network::Testnet3,
   prelude::*,
 };
 
 use crate::{
   log::log,
   memory::forget_buf_ptr_len,
+  network::CurrentNetwork,
 };
 
 #[no_mangle]
@@ -25,7 +25,7 @@ pub extern "C" fn hash_message(message: *const u8, message_len: usize) -> u64 {
     }
   };
 
-  let value = match Value::from_str(message_str) {
+  let value = match Value::<CurrentNetwork>::from_str(message_str) {
     Ok(val) => val,
     Err(e) => {
       log(e.to_string());
@@ -43,7 +43,7 @@ pub extern "C" fn hash_message(message: *const u8, message_len: usize) -> u64 {
   };
 
   // hash the fields
-  let hash = match Testnet3::hash_psd8(fields.as_slice()) {
+  let hash = match CurrentNetwork::hash_psd8(fields.as_slice()) {
     Ok(val) => val,
     Err(e) => {
       log(e.to_string());
@@ -51,7 +51,7 @@ pub extern "C" fn hash_message(message: *const u8, message_len: usize) -> u64 {
     }
   };
 
-  let hash_number: U128<Testnet3> = hash.cast_lossy();
+  let hash_number: U128<CurrentNetwork> = hash.cast_lossy();
   let hash_bytes = hash_number.to_string().into_bytes();
 
   forget_buf_ptr_len(hash_bytes)
@@ -70,7 +70,7 @@ pub extern "C" fn hash_message_bytes(message: *const u8, message_len: usize) -> 
     }
   };
 
-  let value = match Value::from_str(message_str) {
+  let value = match Value::<CurrentNetwork>::from_str(message_str) {
     Ok(val) => val,
     Err(e) => {
       log(e.to_string());
@@ -88,7 +88,7 @@ pub extern "C" fn hash_message_bytes(message: *const u8, message_len: usize) -> 
   };
 
   // hash the fields
-  let hash = match Testnet3::hash_psd8(fields.as_slice()) {
+  let hash = match CurrentNetwork::hash_psd8(fields.as_slice()) {
     Ok(val) => val,
     Err(e) => {
       log(e.to_string());
@@ -96,7 +96,7 @@ pub extern "C" fn hash_message_bytes(message: *const u8, message_len: usize) -> 
     }
   };
 
-  let hash_number: U128<Testnet3> = hash.cast_lossy();
+  let hash_number: U128<CurrentNetwork> = hash.cast_lossy();
 
   let hash_bytes = match hash_number.to_bytes_le() {
     Ok(val) => val,

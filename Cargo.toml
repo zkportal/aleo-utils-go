@@ -1,13 +1,13 @@
 [package]
 name = "aleo-utils"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 
 [lib]
 crate-type = ["cdylib"]
 
 [dependencies]
-snarkvm-console = { version = "0.16.9", features = [ "wasm" ] }
+snarkvm-console = { git = "https://github.com/AleoNet/snarkVM", branch = "mainnet", package = "snarkvm-console", features = [ "wasm" ] }
 rand = "0.8.5"
 getrandom = { version = "0.2.11", features = [ "js" ] }
 hex = "0.4.3"

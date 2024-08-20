@@ -3,7 +3,6 @@ use alloc::string::ToString;
 
 use snarkvm_console::{
   account::{PrivateKey, Address},
-  network::Testnet3,
   prelude::FromStr,
 };
 use rand::{rngs::StdRng, SeedableRng};
@@ -11,11 +10,12 @@ use rand::{rngs::StdRng, SeedableRng};
 use crate::{
   log::log,
   memory::forget_buf_ptr,
+  network::CurrentNetwork,
 };
 
 #[no_mangle]
 pub extern "C" fn new_private_key() -> *const u8 {
-  let pk = match PrivateKey::<Testnet3>::new(&mut StdRng::from_entropy()) {
+  let pk = match PrivateKey::<CurrentNetwork>::new(&mut StdRng::from_entropy()) {
     Ok(val) => val.to_string(),
     Err(e) => {
       log(e.to_string());
@@ -38,7 +38,7 @@ pub extern "C" fn get_address(private_key: *const u8, private_key_len: usize) ->
   };
 
   // Convert the private key string into a PrivateKey
-  let priv_key: PrivateKey<Testnet3> = match PrivateKey::from_str(private_key_str) {
+  let priv_key: PrivateKey<CurrentNetwork> = match PrivateKey::from_str(private_key_str) {
     Ok(pk) => pk,
     Err(e) => {
       log(e.to_string());
@@ -47,7 +47,7 @@ pub extern "C" fn get_address(private_key: *const u8, private_key_len: usize) ->
   };
 
   // Get address from the private key or return null ptr
-  let address = match Address::try_from(priv_key) {
+  let address = match Address::<CurrentNetwork>::try_from(priv_key) {
     Ok(addr) => addr.to_string(),
     Err(e) => {
       log(e.to_string());
