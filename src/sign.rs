@@ -3,7 +3,6 @@ use alloc::string::ToString;
 
 use snarkvm_console::{
   account::{PrivateKey, Address},
-  network::Testnet3,
   program::{Plaintext, Literal, U128},
   prelude::{FromStr, ToFields, Result, FromBytes},
 };
@@ -12,6 +11,7 @@ use rand::{rngs::StdRng, SeedableRng};
 use crate::{
   log::log,
   memory::forget_buf_ptr,
+  network::CurrentNetwork,
 };
 
 #[no_mangle]
@@ -32,7 +32,7 @@ pub extern "C" fn sign(private_key_str: *const u8, private_key_len: usize, hash_
     }
   };
 
-  let value: Result<Plaintext<Testnet3>>;
+  let value: Result<Plaintext<CurrentNetwork>>;
 
   // check if we're dealing with byte value instead of a string value
   if hash_field_string == "" {
@@ -41,10 +41,10 @@ pub extern "C" fn sign(private_key_str: *const u8, private_key_len: usize, hash_
     };
 
     // when we're dealing with bytes, we only accept U128 number as LE bytes (should come from the hash)
-    value = U128::<Testnet3>::from_bytes_le(hash_field_bytes)
+    value = U128::<CurrentNetwork>::from_bytes_le(hash_field_bytes)
       .and_then(|num_value| Ok(Plaintext::Literal(Literal::U128(num_value), Default::default())));
   } else {
-    value = Plaintext::<Testnet3>::from_str(hash_field_string);
+    value = Plaintext::<CurrentNetwork>::from_str(hash_field_string);
   }
 
   // convert hash field string into fields
@@ -57,7 +57,7 @@ pub extern "C" fn sign(private_key_str: *const u8, private_key_len: usize, hash_
   };
 
   // Convert private key string into a PrivateKey or return nullptr
-  let priv_key: PrivateKey<Testnet3> = match PrivateKey::from_str(private_key) {
+  let priv_key: PrivateKey<CurrentNetwork> = match PrivateKey::from_str(private_key) {
     Ok(pk) => pk,
     Err(e) => {
       log(e.to_string());

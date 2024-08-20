@@ -4,13 +4,13 @@ use alloc::{vec::Vec, string::{ToString, String}};
 use indexmap::IndexMap;
 use snarkvm_console::{
   program::{Plaintext, Literal, Identifier, Value, U128},
-  network::Testnet3,
   prelude::{FromStr, FromBytes, Result, ToBytes},
 };
 
 use crate::{
   log::log,
   memory::forget_buf_ptr_len,
+  network::CurrentNetwork,
 };
 
 const CHUNK_SIZE: usize = 16*32;
@@ -50,7 +50,7 @@ pub extern "C" fn format_message(message: *const u8, message_len: usize, target_
   }
 
   // transform a byte array into an array of u128 by grouping bytes in chunks of 16
-  let numbers: Result<Vec<U128<Testnet3>>> = buf
+  let numbers: Result<Vec<U128<CurrentNetwork>>> = buf
     .array_chunks::<16>() // group bytes in chunks of 16 to transform into U128
     .map(|chunk| U128::from_bytes_le(chunk))
     .collect();
@@ -79,12 +79,12 @@ pub extern "C" fn format_message(message: *const u8, message_len: usize, target_
     // inner loop builds ReportDataChunk consisting of 32 u128s
     for (index, plaintext) in number_chunks[i].iter().enumerate() {
       let key = create_struct_key("f", index);
-      chunk_map.insert(Identifier::<Testnet3>::from_str(&key).unwrap(), plaintext.clone());
+      chunk_map.insert(Identifier::<CurrentNetwork>::from_str(&key).unwrap(), plaintext.clone());
     }
 
     // outer loop builds a struct consisting of 1-32 DataChunks
     let key = create_struct_key("c", i);
-    data_map.insert(Identifier::<Testnet3>::from_str(&key).unwrap(), Plaintext::Struct(chunk_map, Default::default()));
+    data_map.insert(Identifier::<CurrentNetwork>::from_str(&key).unwrap(), Plaintext::Struct(chunk_map, Default::default()));
     i += 1;
   }
 
@@ -114,7 +114,7 @@ pub extern "C" fn formatted_message_to_bytes(formatted_message_ptr: *const u8, f
     }
   };
 
-  let value: Value<Testnet3> = match Value::from_str(formatted_message) {
+  let value: Value<CurrentNetwork> = match Value::<CurrentNetwork>::from_str(formatted_message) {
     Ok(val) => val,
     Err(_) => {
       log("cannot convert string to Leo Value");
