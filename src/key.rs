@@ -18,7 +18,11 @@ pub extern "C" fn new_private_key() -> *const u8 {
   let pk = match PrivateKey::<CurrentNetwork>::new(&mut StdRng::from_entropy()) {
     Ok(val) => val.to_string(),
     Err(e) => {
-      log(e.to_string());
+      let mut err_str = String::from("failed to generate new private key: ");
+      err_str.push_str(e.to_string().as_str());
+
+      log(err_str);
+
       return ptr::null();
     }
   };
@@ -33,7 +37,14 @@ pub extern "C" fn get_address(private_key: *const u8, private_key_len: usize) ->
   let private_key_str = unsafe {
     match str::from_utf8(slice::from_raw_parts(private_key, private_key_len)) {
       Ok(val) => val,
-      Err(_) => return ptr::null(),
+      Err(e) => {
+        let mut err_str = String::from("failed to rebuild private key string from pointer: ");
+        err_str.push_str(e.to_string().as_str());
+
+        log(err_str);
+
+        return ptr::null();
+      }
     }
   };
 
@@ -41,7 +52,11 @@ pub extern "C" fn get_address(private_key: *const u8, private_key_len: usize) ->
   let priv_key: PrivateKey<CurrentNetwork> = match PrivateKey::from_str(private_key_str) {
     Ok(pk) => pk,
     Err(e) => {
-      log(e.to_string());
+      let mut err_str = String::from("failed to parse private key from string: ");
+      err_str.push_str(e.to_string().as_str());
+
+      log(err_str);
+
       return ptr::null();
     }
   };
@@ -50,7 +65,11 @@ pub extern "C" fn get_address(private_key: *const u8, private_key_len: usize) ->
   let address = match Address::<CurrentNetwork>::try_from(priv_key) {
     Ok(addr) => addr.to_string(),
     Err(e) => {
-      log(e.to_string());
+      let mut err_str = String::from("failed to convert a private key to address: ");
+      err_str.push_str(e.to_string().as_str());
+
+      log(err_str);
+
       return ptr::null();
     }
   };

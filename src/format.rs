@@ -108,7 +108,11 @@ pub extern "C" fn formatted_message_to_bytes(formatted_message_ptr: *const u8, f
     match str::from_utf8(slice::from_raw_parts(formatted_message_ptr, formatted_message_len)) {
       Ok(val) => val,
       Err(e) => {
-        log(e.to_string());
+        let mut err_str = String::from("failed to rebuild formatted message string from pointer: ");
+        err_str.push_str(e.to_string().as_str());
+
+        log(err_str);
+
         return 0;
       },
     }
@@ -116,8 +120,12 @@ pub extern "C" fn formatted_message_to_bytes(formatted_message_ptr: *const u8, f
 
   let value: Value<CurrentNetwork> = match Value::<CurrentNetwork>::from_str(formatted_message) {
     Ok(val) => val,
-    Err(_) => {
-      log("cannot convert string to Leo Value");
+    Err(e) => {
+      let mut err_str = String::from("cannot convert string to Leo Value: ");
+      err_str.push_str(e.to_string().as_str());
+
+      log(err_str);
+
       return 0;
     }
   };
@@ -177,8 +185,12 @@ pub extern "C" fn formatted_message_to_bytes(formatted_message_ptr: *const u8, f
       // collect LE bytes of U128
       let mut number_bytes = match chunk_number.to_bytes_le() {
         Ok(b) => b,
-        Err(_) => {
-          log("failed to convert U128 to bytes");
+        Err(e) => {
+          let mut err_str = String::from("failed to convert U128 value to bytes: ");
+          err_str.push_str(e.to_string().as_str());
+
+          log(err_str);
+
           return 0;
         }
       };
